@@ -1,11 +1,33 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setUsersListByCurrentPage,
+  setCurrentPage,
+} from '../redux/users/usersActions';
+import { getUsersList, getCurrentPage, getUsersPerPage } from '../selectors';
 
-const Pagination = ({ usersPerPage, totalUsers, paginate }) => {
+const Pagination = () => {
+  const dispatch = useDispatch();
+  const usersList = useSelector(state => getUsersList(state));
+  const currentPage = useSelector(state => getCurrentPage(state));
+  const usersPerPage = useSelector(state => getUsersPerPage(state));
+
   const pageNumbers = [];
 
+  // Get current posts
+  const indexOfLastPost = currentPage * usersPerPage;
+  const indexOfFirstPost = indexOfLastPost - usersPerPage;
+  const currentUsers = usersList.slice(indexOfFirstPost, indexOfLastPost);
+
+  useEffect(() => {
+    dispatch(setUsersListByCurrentPage(currentUsers));
+  });
+
+  // Change page
+  const paginate = pageNumber => dispatch(setCurrentPage(pageNumber));
+
   // eslint-disable-next-line no-plusplus
-  for (let i = 1; i <= Math.ceil(totalUsers / usersPerPage); i++) {
+  for (let i = 1; i <= Math.ceil(usersList.length / usersPerPage); i++) {
     pageNumbers.push(i);
   }
 
@@ -22,12 +44,6 @@ const Pagination = ({ usersPerPage, totalUsers, paginate }) => {
       </ul>
     </nav>
   );
-};
-
-Pagination.propTypes = {
-  usersPerPage: PropTypes.number.isRequired,
-  totalUsers: PropTypes.number.isRequired,
-  paginate: PropTypes.func.isRequired,
 };
 
 export default Pagination;
